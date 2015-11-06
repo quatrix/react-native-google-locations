@@ -41,6 +41,8 @@ public class RNGLocationModule extends ReactContextBaseJavaModule implements Loc
     ReactApplicationContext mReactContext;
     private Location mLastLocation;
     private LocationProvider mLocationProvider;
+    private Callback lastSuccessCallback;
+    private Callback lastErrorCallback;
 
     public RNGLocationModule(ReactApplicationContext reactContext) {
         super(reactContext);
@@ -64,10 +66,15 @@ public class RNGLocationModule extends ReactContextBaseJavaModule implements Loc
 
     public void handleNewLocation(Location location) {
         mLastLocation = location;
+        if (lastSuccessCallback != null) {
+            getLocation(lastSuccessCallback, lastErrorCallback);
+        }
     }
 
     @ReactMethod
     public void getLocation(Callback successCallback, Callback errorCallback) {
+        lastErrorCallback = errorCallback;
+        lastSuccessCallback = successCallback;
         if (mLastLocation != null) {
             try {
                 double Longitude;
@@ -79,7 +86,7 @@ public class RNGLocationModule extends ReactContextBaseJavaModule implements Loc
                 successCallback.invoke(Longitude, Latitude);
             } catch (Exception e) {
                 e.printStackTrace();
-                Log.i(TAG, "Location services connected.");
+                Log.i(TAG, "Location services disconnected.");
             }
         }
     }
