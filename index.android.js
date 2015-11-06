@@ -8,5 +8,7 @@
  * This Module is a Quick and Dirty Hack to return Location from Google Play Services Location for Android
  */
 
-var RNGLocation = require('NativeModules').RNGLocation;
-module.exports = RNGLocation;
+/*var RNGLocation = require('NativeModules').RNGLocation;
+module.exports = RNGLocation;*/
+var { NativeModules } = require('react-native');
+module.exports = NativeModules.RNGLocation;
