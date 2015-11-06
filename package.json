@@ -13,7 +13,15 @@
   "keywords": [
     "react-native"
   ],
-  "author": "Tim Hagn",
+  "author": {
+    "name": "Tim Hagn"
+  },
   "license": "ISC",
-  "homepage": "https://bitbucket.org/timhagn/react-native-google-locations#readme"
+  "homepage": "https://bitbucket.org/timhagn/react-native-google-locations#readme",
+  "gitHead": "029335e4c572073a881265e0ffecad9cfdeaff34",
+  "readme": "ERROR: No README data found!",
+  "_id": "react-native-google-location@0.0.1",
+  "_shasum": "e27e195e097cf253ca2a388f73f4e32fa193a7dd",
+  "_from": "../RNGLocation",
+  "_resolved": "file:../RNGLocation"
 }

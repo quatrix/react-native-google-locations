@@ -31,11 +31,16 @@ public class RNGLocationModule extends ReactContextBaseJavaModule implements
 
     public RNGLocationModule(ReactApplicationContext reactContext) {
         super(reactContext);
-        mGoogleApiClient = new GoogleApiClient.Builder(reactContext)
-                .addConnectionCallbacks(this)
-                .addOnConnectionFailedListener(this)
-                .addApi(LocationServices.API)
-                .build();
+        try {
+            mGoogleApiClient = new GoogleApiClient.Builder(reactContext)
+                    .addConnectionCallbacks(this)
+                    .addOnConnectionFailedListener(this)
+                    .addApi(LocationServices.API)
+                    .build();
+        } catch (Exception e) {
+            e.printStackTrace();
+            sendError("getLocation Error", "location_error");
+        }
         mReactContext = reactContext;
     }
 
@@ -46,8 +51,13 @@ public class RNGLocationModule extends ReactContextBaseJavaModule implements
 
     @Override
     public void onConnected(Bundle connectionHint) {
-        mLastLocation = LocationServices.FusedLocationApi.getLastLocation(
-                mGoogleApiClient);
+        try {
+            mLastLocation = LocationServices.FusedLocationApi.getLastLocation(
+                    mGoogleApiClient);
+        } catch (Exception e) {
+            e.printStackTrace();
+            sendError("getLocation Error", "location_error");
+        }
     }
 
     @ReactMethod
