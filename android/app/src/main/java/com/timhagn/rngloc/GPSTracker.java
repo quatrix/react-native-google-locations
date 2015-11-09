@@ -15,7 +15,7 @@ import android.os.Looper;
 import android.provider.Settings;
 import android.util.Log;
 
-public class GPSTracker extends Service implements LocationListener {
+public class GPSTracker implements LocationListener {
 
     private final Context mContext;
 
@@ -53,7 +53,7 @@ public class GPSTracker extends Service implements LocationListener {
     public Location getLocation() {
         try {
             locationManager = (LocationManager) mContext
-                    .getSystemService(LOCATION_SERVICE);
+                    .getSystemService(Context.LOCATION_SERVICE);
 
             // getting GPS status
             isGPSEnabled = locationManager
@@ -206,9 +206,9 @@ public class GPSTracker extends Service implements LocationListener {
         Log.i("GPSTracker", provider);
     }
 
-    @Override
+   /* @Override
     public IBinder onBind(Intent arg0) {
         return null;
-    }
+    }*/
 
 }

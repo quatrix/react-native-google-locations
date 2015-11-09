@@ -1,34 +1,17 @@
 package com.timhagn.rngloc;
 
-import android.app.PendingIntent;
-import android.content.ComponentName;
-import android.content.Context;
-import android.content.Intent;
-import android.content.ServiceConnection;
 import android.location.Location;
-import android.os.Binder;
-import android.os.Bundle;
-import android.os.IBinder;
-import android.renderscript.ScriptGroup;
+import android.support.annotation.Nullable;
 import android.util.Log;
 
 import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.Callback;
-import com.facebook.react.bridge.NativeModule;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactMethod;
 import com.facebook.react.bridge.WritableMap;
 import com.facebook.react.modules.core.DeviceEventManagerModule;
-import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.location.LocationServices;
-import com.google.android.gms.maps.CameraUpdateFactory;
-import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.MarkerOptions;
-
-import java.util.Map;
 
 /**
  * Created by hagn on 11/5/15.
@@ -41,8 +24,6 @@ public class RNGLocationModule extends ReactContextBaseJavaModule implements Loc
     ReactApplicationContext mReactContext;
     private Location mLastLocation;
     private LocationProvider mLocationProvider;
-    private Callback lastSuccessCallback;
-    private Callback lastErrorCallback;
 
     public RNGLocationModule(ReactApplicationContext reactContext) {
         super(reactContext);
@@ -50,7 +31,7 @@ public class RNGLocationModule extends ReactContextBaseJavaModule implements Loc
         mLocationProvider = new LocationProvider(mReactContext.getApplicationContext(), this);
 
         if (!mLocationProvider.checkPlayServices()) {
-            mLocationProvider.disconnect();
+            mLocationProvider.disconnect(); //*/
 
             Log.i(TAG, "Location Provider not available, trying GPS.");
 
@@ -66,7 +47,7 @@ public class RNGLocationModule extends ReactContextBaseJavaModule implements Loc
             Log.i(TAG, "Location Provider successfully created.");
         }//*/
 
-        // TODO: Schaun, wieso update Location nich ausgeführt wird...
+        // TODO: Schaun, wieso update Location bei GPS nen Fehler wirft...
     }
 
 
@@ -86,16 +67,12 @@ public class RNGLocationModule extends ReactContextBaseJavaModule implements Loc
     @Override
     public void handleNewLocation(Location location) {
         mLastLocation = location;
-        if (lastSuccessCallback != null) {
-            Log.i(TAG, "New GPSLocation..." + location.toString());
-            getLocation(lastSuccessCallback, lastErrorCallback);
-        }
+        Log.i(TAG, "New GPSLocation..." + location.toString());
+        getLocation();
     }
 
     @ReactMethod
-    public void getLocation(Callback successCallback, Callback errorCallback) {
-        lastErrorCallback = errorCallback;
-        lastSuccessCallback = successCallback;
+    public void getLocation() {
         if (mLastLocation != null) {
             try {
                 double Longitude;
@@ -104,13 +81,25 @@ public class RNGLocationModule extends ReactContextBaseJavaModule implements Loc
                 Longitude = mLastLocation.getLongitude();
                 Latitude = mLastLocation.getLatitude();
 
-                Log.i(TAG, "Got new location.");
+                Log.i(TAG, "Got new location. Lng: " +Longitude+" Lat: "+Latitude);
 
-                successCallback.invoke(Longitude, Latitude);
+                WritableMap params = Arguments.createMap();
+                params.putDouble("Longitude", Longitude);
+                params.putDouble("Latitude", Latitude);
+
+                sendEvent(mReactContext, "updateLocation", params);
+
+                //successCallback.invoke(Longitude, Latitude);
             } catch (Exception e) {
                 e.printStackTrace();
                 Log.i(TAG, "Location services disconnected.");
             }
         }
+    }
+
+    private void sendEvent(ReactContext reactContext, String eventName, @Nullable WritableMap params) {
+        reactContext
+                .getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
+                .emit(eventName, params);
     }
 }
