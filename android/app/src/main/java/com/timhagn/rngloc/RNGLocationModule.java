@@ -47,7 +47,26 @@ public class RNGLocationModule extends ReactContextBaseJavaModule implements Loc
     public RNGLocationModule(ReactApplicationContext reactContext) {
         super(reactContext);
         mReactContext = reactContext;
-        mLocationProvider = new LocationProvider(mReactContext, this);
+        mLocationProvider = new LocationProvider(mReactContext.getApplicationContext(), this);
+
+        if (!mLocationProvider.checkPlayServices()) {
+            mLocationProvider.disconnect();
+
+            Log.i(TAG, "Location Provider not available, trying GPS.");
+
+            GPSTracker gps = new GPSTracker(mReactContext.getApplicationContext(), this);
+            if (gps.canGetLocation()) {
+                Log.i(TAG, "Using GPS....");
+                handleNewLocation(gps.location);
+            } else {
+                Log.i(TAG, "No Location Service available.");
+            }
+        } else {
+            mLocationProvider.connect();
+            Log.i(TAG, "Location Provider successfully created.");
+        }//*/
+
+        // TODO: Schaun, wieso update Location nich ausgeführt wird...
     }
 
 
@@ -64,9 +83,11 @@ public class RNGLocationModule extends ReactContextBaseJavaModule implements Loc
         mLocationProvider.disconnect();
     }
 
+    @Override
     public void handleNewLocation(Location location) {
         mLastLocation = location;
         if (lastSuccessCallback != null) {
+            Log.i(TAG, "New GPSLocation..." + location.toString());
             getLocation(lastSuccessCallback, lastErrorCallback);
         }
     }
@@ -82,6 +103,8 @@ public class RNGLocationModule extends ReactContextBaseJavaModule implements Loc
 
                 Longitude = mLastLocation.getLongitude();
                 Latitude = mLastLocation.getLatitude();
+
+                Log.i(TAG, "Got new location.");
 
                 successCallback.invoke(Longitude, Latitude);
             } catch (Exception e) {
