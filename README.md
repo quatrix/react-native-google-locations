@@ -4,13 +4,18 @@ Location acquisition through Google Play Services.
 
 ### Installation
 
+#### If you have not done - Install Google Play APK
+
+Check [here](https://developers.google.com/android/guides/setup) 
+
+#### Install the npm package
 ```bash
 npm i --save react-native-google-location
 ```
 
 ### Add it to your android project
 
-* In `android/setting.gradle`
+* In `android/settings.gradle`
 
 ```gradle
 ...
@@ -59,6 +64,31 @@ public class MainActivity extends Activity implements DefaultHardwareBackBtnHand
   ......
 
 }
+```
+
+#### Add your Google API Key and permissions to your Project
+
+Add this to your AndroidManifest file;
+
+[More info on API Keys can be found here](https://developers.google.com/maps/documentation/android-api/signup?hl=en)
+
+``` xml
+// file: android/app/src/main/AndroidManifest.xml
+<uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+<uses-permission android:name="android.permission.INTERNET" />
+<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+
+<uses-permission android:name="android.permission.ACCESS_GPS" />
+<uses-permission android:name="android.permission.ACCESS_LOCATION" />
+<uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+<uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+```
+Make sure this goes at the bottom of the `<application>` tag.
+``` xml
+	<uses-library android:name="com.google.android.maps" />
+	<meta-data
+	    android:name="com.google.android.geo.API_KEY"
+	    android:value="YOUR_API_KEY"/>
 ```
 
 ## Example
