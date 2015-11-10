@@ -5,7 +5,6 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="4a9436d1-24cc-467f-8e6e-2803b6472080" name="Default" comment="">
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../package.json" afterPath="$PROJECT_DIR$/../package.json" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../.idea/workspace.xml" afterPath="$PROJECT_DIR$/../.idea/workspace.xml" />
     </list>
     <ignored path="RNLoc.iws" />

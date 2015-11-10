@@ -16,9 +16,6 @@
   "author": {
     "name": "Tim Hagn"
   },
-  "dependencies": {
-    "react-native": "^0.12.0"
-  },
   "license": "ISC",
   "homepage": "https://bitbucket.org/timhagn/react-native-google-locations#readme",
   "gitHead": "029335e4c572073a881265e0ffecad9cfdeaff34",
