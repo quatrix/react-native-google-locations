@@ -1,7 +1,7 @@
 {
   "name": "react-native-google-location",
   "version": "0.1.0",
-  "description": "Quick and Dirty Google Play Services Location Module for React Native Android.",
+  "description": "Google Play Services Location Module for React Native Android.",
   "main": "index.android.js",
   "repository": {
     "type": "git",
