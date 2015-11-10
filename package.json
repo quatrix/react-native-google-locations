@@ -1,27 +1,28 @@
 {
   "name": "react-native-google-location",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "Quick and Dirty Google Play Services Location Module for React Native Android.",
   "main": "index.android.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
   "repository": {
     "type": "git",
     "url": "git+ssh://git@bitbucket.org/timhagn/react-native-google-locations.git"
   },
   "keywords": [
-    "react-native"
+    "react-native",
+    "android",
+    "google-play-services",
+    "location"
   ],
   "author": {
     "name": "Tim Hagn"
+  },
+  "dependencies": {
+    "react-native": "^0.12.0"
   },
   "license": "ISC",
   "homepage": "https://bitbucket.org/timhagn/react-native-google-locations#readme",
   "gitHead": "029335e4c572073a881265e0ffecad9cfdeaff34",
   "readme": "ERROR: No README data found!",
-  "_id": "react-native-google-location@0.0.1",
-  "_shasum": "e27e195e097cf253ca2a388f73f4e32fa193a7dd",
-  "_from": "../RNGLocation",
-  "_resolved": "file:../RNGLocation"
+  "_id": "react-native-google-location@0.1.0",
+  "_shasum": "e27e195e097cf253ca2a388f73f4e32fa193a7dd"
 }
