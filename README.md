@@ -80,7 +80,6 @@ Add this to your AndroidManifest file;
 
 <uses-permission android:name="android.permission.ACCESS_GPS" />
 <uses-permission android:name="android.permission.ACCESS_LOCATION" />
-<uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
 <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
 ```
 Make sure this goes at the bottom of the `<application>` tag.
