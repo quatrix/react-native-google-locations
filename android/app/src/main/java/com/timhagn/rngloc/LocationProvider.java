@@ -22,29 +22,37 @@ public class LocationProvider implements
         GoogleApiClient.OnConnectionFailedListener,
         LocationListener {
 
+    /**
+     * Location Callback interface to be defined in Module
+     */
     public abstract interface LocationCallback {
-        public void handleNewLocation(Location location);
+        public abstract void handleNewLocation(Location location);
     }
 
+    // Unique Name for Log TAG
     public static final String TAG = LocationProvider.class.getSimpleName();
-
     /*
      * Define a request code to send to Google Play services
      * This code is returned in Activity.onActivityResult
      */
     private final static int CONNECTION_FAILURE_RESOLUTION_REQUEST = 9000;
-    private final static int PLAY_SERVICES_RESOLUTION_REQUEST = 1000;
-
+    // Location Callback for later use
     private LocationCallback mLocationCallback;
+    // Context for later use
     private Context mContext;
+    // Main Google API CLient (Google Play Services API)
     private GoogleApiClient mGoogleApiClient;
+    // Location Request for later use
     private LocationRequest mLocationRequest;
-
+    // Are we Connected?
     public Boolean connected;
 
     public LocationProvider(Context context, LocationCallback updateCallback) {
+        // Save current Context
         mContext = context;
+        // Save Location Callback
         this.mLocationCallback = updateCallback;
+        // Initialize connection "state"
         connected = false;
 
         // First we need to check availability of play services
@@ -59,8 +67,7 @@ public class LocationProvider implements
             mLocationRequest = LocationRequest.create()
                     .setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY)
                     .setInterval(10 * 1000)        // 10 seconds, in milliseconds
-                    .setFastestInterval(1 * 1000); // 1 second, in milliseconds
-
+                    .setFastestInterval(1000);     // 1 second, in milliseconds
         }
     }
 
@@ -81,10 +88,16 @@ public class LocationProvider implements
         return true;
     }
 
+    /**
+     * Connects to Google Play Services - Location
+     */
     public void connect() {
         mGoogleApiClient.connect();
     }
 
+    /**
+     * Disconnects to Google Play Services - Location
+     */
     public void disconnect() {
         if (mGoogleApiClient.isConnected()) {
             LocationServices.FusedLocationApi.removeLocationUpdates(mGoogleApiClient, this);
@@ -95,20 +108,20 @@ public class LocationProvider implements
     @Override
     public void onConnected(Bundle bundle) {
         Log.i(TAG, "Location services connected.");
+        // We are Connected!
         connected = true;
-
+        // First, get Last Location and return it to Callback
         Location location = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
         if (location != null) {
             mLocationCallback.handleNewLocation(location);
         }
-
+        // Now request continuous Location Updates
         LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, mLocationRequest, this);
-
     }
 
     @Override
     public void onConnectionSuspended(int i) {
-
+        Log.i(TAG, "Location services suspended...");
     }
 
     @Override
@@ -144,6 +157,7 @@ public class LocationProvider implements
     @Override
     public void onLocationChanged(Location location) {
         Log.i(TAG, "Location Changed!");
+        // Callback as defined in Module.
         mLocationCallback.handleNewLocation(location);
     }
 }
