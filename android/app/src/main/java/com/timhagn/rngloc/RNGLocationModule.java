@@ -82,7 +82,7 @@ public class RNGLocationModule extends ReactContextBaseJavaModule implements Loc
                 Longitude = mLastLocation.getLongitude();
                 Latitude = mLastLocation.getLatitude();
 
-                Log.i(TAG, "Got new location. Lng: " +Longitude+" Lat: "+Latitude);
+                Log.i(TAG, "Got new location. Lng: " + Longitude+" Lat: " + Latitude);
 
                 // Create Map with Parameters to send to JS
                 WritableMap params = Arguments.createMap();
