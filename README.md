@@ -70,24 +70,16 @@ public class MainActivity extends Activity implements DefaultHardwareBackBtnHand
 
 Add this to your AndroidManifest file;
 
-[More info on API Keys can be found here](https://developers.google.com/maps/documentation/android-api/signup?hl=en)
-
 ``` xml
 // file: android/app/src/main/AndroidManifest.xml
-<uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-<uses-permission android:name="android.permission.INTERNET" />
-<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
-
-<uses-permission android:name="android.permission.ACCESS_GPS" />
-<uses-permission android:name="android.permission.ACCESS_LOCATION" />
 <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
 ```
 Make sure this goes at the bottom of the `<application>` tag.
 ``` xml
 	<uses-library android:name="com.google.android.maps" />
 	<meta-data
-	    android:name="com.google.android.geo.API_KEY"
-	    android:value="YOUR_API_KEY"/>
+        android:name="com.google.android.gms.version"
+        android:value="@integer/google_play_services_version" />
 ```
 
 ## Example
