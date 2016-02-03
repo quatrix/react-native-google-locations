@@ -69,7 +69,7 @@ public class RNGLocationModule extends ReactContextBaseJavaModule implements Loc
     }
 
     /*
-     * Location Callback as called by JS
+     * Location Provider as called by JS
      */
     @ReactMethod
     public void getLocation() {

@@ -88,30 +88,47 @@ Make sure this goes at the bottom of the `<application>` tag.
 
 var React = require('react-native');
 
-// For registering the Callback-Listener
-var { DeviceEventEmitter } = require('react-native');
-
-var RNGLocation = require('react-native-google-location');
+// Import react-native-google-location
+import RNGLocation from 'react-native-google-location';
 
 var {
+  Component,
   AppRegistry,
+  // DeviceEventEmitter for registering of the Callback-Listener
+  DeviceEventEmitter,
   StyleSheet,
   Text,
   View,
 } = React;
 
-var RNGLocationExample = React.createClass({
-  // Create and Reset initial State Longitude (lng) and Latitude (lat)	
-  getInitialState: function() { return { lng: 0.0, lat: 0.0}; },
+export default class RNGLocationExample extends Component {
+  constructor(props) {
+    super(props);
+    // Create and Reset initial State Longitude (lng) and Latitude (lat)
+    this.state = {
+      lng: 0.0, 
+      lat: 0.0,
+    };
 
-  componentDidMount: function() {
-  	  // Register Listener Callback !Important!
-      DeviceEventEmitter.addListener('updateLocation', function(e: Event) {
-          this.setState({lng: e.Longitude, lat: e.Latitude });
-      }.bind(this));
+    if (!this.evEmitter) {
+      // Register Listener Callback - has to be removed later
+      this.evEmitter = DeviceEventEmitter.addListener('updateLocation', this.onLocationChange.bind(this));
       // Initialize RNGLocation
       RNGLocation.getLocation();
-  },
+    }
+  }
+
+  onLocationChange (e: Event) {
+    this.setState({
+      lng: e.Longitude, 
+      lat: e.Latitude 
+    });
+  }
+
+  componentWillUnmount() {
+    // Stop listening for Events
+    this.evEmitter.remove();
+  }
 
   render() {
     return (
@@ -122,7 +139,7 @@ var RNGLocationExample = React.createClass({
       </View>
     );
   }
-});
+}
 
 var styles = StyleSheet.create({
   container: {
