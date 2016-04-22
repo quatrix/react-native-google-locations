@@ -46,7 +46,7 @@ dependencies {
 
 
 **Newer versions of React Native**
-```
+```java
 ...
 import com.timhagn.rngloc.RNGLocation;  // <--- import
 ...
