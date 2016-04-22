@@ -13,7 +13,16 @@ Check [here](https://developers.google.com/android/guides/setup)
 npm i --save react-native-google-location
 ```
 
-### Add it to your android project
+Then you must install the native dependencies. You can use [`rnpm`](https://github.com/rnpm/rnpm) to
+add native dependencies automatically (you still have to add permissions to your Manifest file, see _"Add Permissions and used Google API to your Project"_):
+
+```bash
+rnpm link
+```
+
+or do it manually as described below:
+
+### Manual Installation: Add it to your android project
 
 * In `android/settings.gradle`
 
@@ -34,6 +43,26 @@ dependencies {
 ```
 
 * register module (in MainActivity.java)
+
+
+**Newer versions of React Native**
+```
+...
+import com.timhagn.rngloc.RNGLocation;  // <--- import
+...
+public class MainActivity extends ReactActivity {
+ ....
+ @Override
+ protected List<ReactPackage> getPackages() {
+   return Arrays.<ReactPackage>asList(
+     new MainReactPackage(),
+     new RNGLocation() // <---- and This!
+   );
+ }
+}
+```
+
+**Older versions of React Native**
 
 ```java
 import com.timhagn.rngloc.RNGLocation;  // <--- import
@@ -66,7 +95,7 @@ public class MainActivity extends Activity implements DefaultHardwareBackBtnHand
 }
 ```
 
-#### Add your Google API Key and permissions to your Project
+#### Add Permissions and used Google API to your Project
 
 Add this to your AndroidManifest file;
 
