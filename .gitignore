@@ -1,3 +1,5 @@
 node_modules/
 .idea/
 android/.idea/
+android/app/build/
+android/app/react-native-google-location.iml
