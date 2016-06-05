@@ -22,6 +22,8 @@ public class LocationProvider implements
         GoogleApiClient.OnConnectionFailedListener,
         LocationListener {
 
+    public static final int MINUTE = 60 * 1000;
+
     /**
      * Location Callback interface to be defined in Module
      */
@@ -46,6 +48,8 @@ public class LocationProvider implements
     private LocationRequest mLocationRequest;
     // Are we Connected?
     public Boolean connected;
+    // Is it the first request?
+    private Boolean mFirstLocationRequest;
 
     public LocationProvider(Context context, LocationCallback updateCallback) {
         // Save current Context
@@ -54,6 +58,8 @@ public class LocationProvider implements
         this.mLocationCallback = updateCallback;
         // Initialize connection "state"
         connected = false;
+
+        mFirstLocationRequest = true;
 
         // First we need to check availability of play services
         if (checkPlayServices()) {
@@ -66,8 +72,10 @@ public class LocationProvider implements
             // Create the LocationRequest object
             mLocationRequest = LocationRequest.create()
                     .setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY)
-                    .setInterval(60 * 1000)        // 1 minute, in milliseconds
-                    .setFastestInterval(60 * 1000);     // 1 minute, in milliseconds
+                    .setMaxWaitTime(10 * 1000)
+                    .setInterval(10 * 1000)
+                    .setFastestInterval(10 * 1000)
+                    .setNumUpdates(1);
         }
     }
 
@@ -111,12 +119,17 @@ public class LocationProvider implements
         // We are Connected!
         connected = true;
         // First, get Last Location and return it to Callback
-        Location location = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
-        if (location != null) {
-            mLocationCallback.handleNewLocation(location);
+        if (mFirstLocationRequest) {
+            Location location = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
+
+            if (location != null) {
+                mLocationCallback.handleNewLocation(location);
+                mFirstLocationRequest = false;
+            }
         }
         // Now request continuous Location Updates
-        LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, mLocationRequest, this);
+        //LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, mLocationRequest, this);
+        requestLocation();
     }
 
     @Override
@@ -154,10 +167,23 @@ public class LocationProvider implements
         }
     }
 
+    public void requestLocation() {
+        LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, mLocationRequest, this);
+    }
+
     @Override
     public void onLocationChanged(Location location) {
-        Log.i(TAG, "Location Changed!");
-        // Callback as defined in Module.
         mLocationCallback.handleNewLocation(location);
+
+        new android.os.Handler().postDelayed(
+                new Runnable() {
+                    public void run() {
+                        requestLocation();
+                    }
+                },
+                MINUTE);
     }
 }
+
+
+
