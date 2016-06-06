@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.IntentSender;
 import android.location.Location;
 import android.os.Bundle;
+import android.os.Handler;
 import android.util.Log;
 
 import com.google.android.gms.common.ConnectionResult;
@@ -13,6 +14,9 @@ import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
+
+import java.util.Timer;
+import java.util.TimerTask;
 
 /**
  * Created by benjakuben on 12/17/14.
@@ -24,6 +28,7 @@ public class LocationProvider implements
 
     public static final int MINUTE = 60 * 1000;
 
+    private LocationRequest mLocationRequest;
     /**
      * Location Callback interface to be defined in Module
      */
@@ -45,7 +50,6 @@ public class LocationProvider implements
     // Main Google API CLient (Google Play Services API)
     private GoogleApiClient mGoogleApiClient;
     // Location Request for later use
-    private LocationRequest mLocationRequest;
     // Are we Connected?
     public Boolean connected;
     // Is it the first request?
@@ -68,14 +72,6 @@ public class LocationProvider implements
                     .addOnConnectionFailedListener(this)
                     .addApi(LocationServices.API)
                     .build();
-
-            // Create the LocationRequest object
-            mLocationRequest = LocationRequest.create()
-                    .setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY)
-                    .setMaxWaitTime(10 * 1000)
-                    .setInterval(10 * 1000)
-                    .setFastestInterval(10 * 1000)
-                    .setNumUpdates(1);
         }
     }
 
@@ -127,9 +123,25 @@ public class LocationProvider implements
                 mFirstLocationRequest = false;
             }
         }
-        // Now request continuous Location Updates
-        //LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, mLocationRequest, this);
-        requestLocation();
+
+        callAsynchronousTask();
+    }
+
+    public void callAsynchronousTask() {
+        final Handler handler = new Handler();
+        Timer timer = new Timer();
+        TimerTask doAsynchronousTask = new TimerTask() {
+            @Override
+            public void run() {
+                handler.post(new Runnable() {
+                    public void run() {
+                        Log.i("vova", "requesting location");
+                        requestLocation();
+                    }
+                });
+            }
+        };
+        timer.schedule(doAsynchronousTask, 0, MINUTE); //execute in every 50000 ms
     }
 
     @Override
@@ -168,20 +180,19 @@ public class LocationProvider implements
     }
 
     public void requestLocation() {
+        mLocationRequest = LocationRequest.create()
+                .setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY)
+                .setExpirationDuration(10 * 1000)
+                .setInterval(10 * 1000)
+                .setFastestInterval(10 * 1000)
+                .setNumUpdates(1);
+
         LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, mLocationRequest, this);
     }
 
     @Override
     public void onLocationChanged(Location location) {
         mLocationCallback.handleNewLocation(location);
-
-        new android.os.Handler().postDelayed(
-                new Runnable() {
-                    public void run() {
-                        requestLocation();
-                    }
-                },
-                MINUTE);
     }
 }
 
