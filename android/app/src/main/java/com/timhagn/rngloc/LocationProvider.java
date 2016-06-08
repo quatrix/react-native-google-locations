@@ -1,7 +1,10 @@
 package com.timhagn.rngloc;
 
 import android.app.Activity;
+import android.app.AlarmManager;
+import android.app.PendingIntent;
 import android.content.Context;
+import android.content.Intent;
 import android.content.IntentSender;
 import android.location.Location;
 import android.os.Bundle;
@@ -26,9 +29,7 @@ public class LocationProvider implements
         GoogleApiClient.OnConnectionFailedListener,
         LocationListener {
 
-    public static final int MINUTE = 60 * 1000;
 
-    private LocationRequest mLocationRequest;
     /**
      * Location Callback interface to be defined in Module
      */
@@ -52,18 +53,12 @@ public class LocationProvider implements
     // Location Request for later use
     // Are we Connected?
     public Boolean connected;
-    // Is it the first request?
-    private Boolean mFirstLocationRequest;
 
     public LocationProvider(Context context, LocationCallback updateCallback) {
         // Save current Context
         mContext = context;
         // Save Location Callback
         this.mLocationCallback = updateCallback;
-        // Initialize connection "state"
-        connected = false;
-
-        mFirstLocationRequest = true;
 
         // First we need to check availability of play services
         if (checkPlayServices()) {
@@ -112,37 +107,29 @@ public class LocationProvider implements
     @Override
     public void onConnected(Bundle bundle) {
         Log.i(TAG, "Location services connected.");
-        // We are Connected!
-        connected = true;
-        // First, get Last Location and return it to Callback
-        if (mFirstLocationRequest) {
-            Location location = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
 
-            if (location != null) {
-                mLocationCallback.handleNewLocation(location);
-                mFirstLocationRequest = false;
-            }
+        connected = true;
+
+        Location location = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
+
+        if (location != null) {
+            mLocationCallback.handleNewLocation(location);
         }
 
-        callAsynchronousTask();
+        Intent lu = new Intent(mContext, LocationUpdaterService.class);
+        LocationUpdaterService.setCallback(this);
+        mContext.startService(lu);
+
+        AlarmManager alarm = (AlarmManager)mContext.getSystemService(Context.ALARM_SERVICE);
+        alarm.set(
+                alarm.RTC_WAKEUP,
+                System.currentTimeMillis(),
+                PendingIntent.getService(mContext, 0, new Intent(mContext, LocationUpdaterService.class), 0)
+        );
+
     }
 
-    public void callAsynchronousTask() {
-        final Handler handler = new Handler();
-        Timer timer = new Timer();
-        TimerTask doAsynchronousTask = new TimerTask() {
-            @Override
-            public void run() {
-                handler.post(new Runnable() {
-                    public void run() {
-                        Log.i("vova", "requesting location");
-                        requestLocation();
-                    }
-                });
-            }
-        };
-        timer.schedule(doAsynchronousTask, 0, MINUTE); //execute in every 50000 ms
-    }
+
 
     @Override
     public void onConnectionSuspended(int i) {
@@ -180,14 +167,14 @@ public class LocationProvider implements
     }
 
     public void requestLocation() {
-        mLocationRequest = LocationRequest.create()
+        LocationRequest request = LocationRequest.create()
                 .setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY)
-                .setExpirationDuration(10 * 1000)
-                .setInterval(10 * 1000)
+                .setExpirationDuration(30 * 1000)
+                .setInterval(60 * 1000)
                 .setFastestInterval(10 * 1000)
                 .setNumUpdates(1);
 
-        LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, mLocationRequest, this);
+        LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, request, this);
     }
 
     @Override
