@@ -30,7 +30,7 @@ repositories {
 }
 
 dependencies {
-  compile 'com.facebook.react:react-native:0.12.+'
   compile 'com.google.android.gms:play-services-location:8.3.0'
+  compile 'com.facebook.react:react-native:+'
 }
 

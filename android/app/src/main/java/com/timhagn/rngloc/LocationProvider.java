@@ -8,18 +8,20 @@ import android.content.Intent;
 import android.content.IntentSender;
 import android.location.Location;
 import android.os.Bundle;
-import android.os.Handler;
 import android.util.Log;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.common.api.PendingResult;
+import com.google.android.gms.common.api.ResultCallback;
+import com.google.android.gms.common.api.Status;
 import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
-
-import java.util.Timer;
-import java.util.TimerTask;
+import com.google.android.gms.location.LocationSettingsRequest;
+import com.google.android.gms.location.LocationSettingsResult;
+import com.google.android.gms.location.LocationSettingsStatusCodes;
 
 /**
  * Created by benjakuben on 12/17/14.
@@ -29,6 +31,7 @@ public class LocationProvider implements
         GoogleApiClient.OnConnectionFailedListener,
         LocationListener {
 
+    public boolean mAlreadyAskedForLocationPermission = false;
 
     /**
      * Location Callback interface to be defined in Module
@@ -44,6 +47,7 @@ public class LocationProvider implements
      * This code is returned in Activity.onActivityResult
      */
     private final static int CONNECTION_FAILURE_RESOLUTION_REQUEST = 9000;
+
     // Location Callback for later use
     private LocationCallback mLocationCallback;
     // Context for later use
@@ -53,12 +57,14 @@ public class LocationProvider implements
     // Location Request for later use
     // Are we Connected?
     public Boolean connected;
+    private LocationRequest mLocationRequest;
+    private Activity mActivity;
 
-    public LocationProvider(Context context, LocationCallback updateCallback) {
-        // Save current Context
+
+    public LocationProvider(Context context, Activity activity, LocationCallback updateCallback) {
         mContext = context;
-        // Save Location Callback
-        this.mLocationCallback = updateCallback;
+        mActivity = activity;
+        mLocationCallback = updateCallback;
 
         // First we need to check availability of play services
         if (checkPlayServices()) {
@@ -116,19 +122,21 @@ public class LocationProvider implements
             mLocationCallback.handleNewLocation(location);
         }
 
+        startUpdatingLocation();
+    }
+
+    private void startUpdatingLocation() {
         Intent lu = new Intent(mContext, LocationUpdaterService.class);
         LocationUpdaterService.setCallback(this);
         mContext.startService(lu);
 
         AlarmManager alarm = (AlarmManager)mContext.getSystemService(Context.ALARM_SERVICE);
         alarm.set(
-                alarm.RTC_WAKEUP,
-                System.currentTimeMillis(),
-                PendingIntent.getService(mContext, 0, new Intent(mContext, LocationUpdaterService.class), 0)
+            alarm.RTC_WAKEUP,
+            System.currentTimeMillis(),
+            PendingIntent.getService(mContext, 0, new Intent(mContext, LocationUpdaterService.class), 0)
         );
-
     }
-
 
 
     @Override
@@ -144,6 +152,7 @@ public class LocationProvider implements
          * start a Google Play services activity that can resolve
          * error.
          */
+
         if (connectionResult.hasResolution() && mContext instanceof Activity) {
             try {
                 Activity activity = (Activity)mContext;
@@ -167,14 +176,43 @@ public class LocationProvider implements
     }
 
     public void requestLocation() {
-        LocationRequest request = LocationRequest.create()
+        mLocationRequest = LocationRequest.create()
                 .setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY)
                 .setExpirationDuration(30 * 1000)
                 .setInterval(60 * 1000)
                 .setFastestInterval(10 * 1000)
                 .setNumUpdates(1);
 
-        LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, request, this);
+        LocationSettingsRequest.Builder builder = new LocationSettingsRequest.Builder()
+                .addLocationRequest(mLocationRequest);
+
+        builder.setAlwaysShow(true);
+        final LocationProvider outer = this;
+        PendingResult<LocationSettingsResult> result =
+                LocationServices.SettingsApi.checkLocationSettings(mGoogleApiClient, builder.build());
+        result.setResultCallback(new ResultCallback<LocationSettingsResult>() {
+            @Override
+            public void onResult(LocationSettingsResult result) {
+                final Status status = result.getStatus();
+                switch (status.getStatusCode()) {
+                    case LocationSettingsStatusCodes.SUCCESS:
+                        LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, mLocationRequest, outer);
+                        break;
+                    case LocationSettingsStatusCodes.RESOLUTION_REQUIRED:
+                        if (mAlreadyAskedForLocationPermission)
+                            return;
+
+                        try {
+                            status.startResolutionForResult(mActivity, RNGLocationModule.REQUEST_LOCATION_PERMISSIONS);
+                            mAlreadyAskedForLocationPermission = true;
+                        } catch (IntentSender.SendIntentException e) {
+                            // Ignore the error.
+                        }
+                        break;
+                }
+            }
+        });
+
     }
 
     @Override

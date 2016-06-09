@@ -1,9 +1,14 @@
 package com.timhagn.rngloc;
 
+import android.app.AlarmManager;
+import android.app.PendingIntent;
+import android.content.Context;
+import android.content.Intent;
 import android.location.Location;
 import android.support.annotation.Nullable;
 import android.util.Log;
 
+import com.facebook.react.bridge.ActivityEventListener;
 import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContext;
@@ -19,28 +24,19 @@ import com.facebook.react.modules.core.DeviceEventManagerModule;
  *
  */
 public class RNGLocationModule extends ReactContextBaseJavaModule implements LocationProvider.LocationCallback {
-    // React Class Name as called from JS
     public static final String REACT_CLASS = "RNGLocation";
-    // Unique Name for Log TAG
     public static final String TAG = RNGLocationModule.class.getSimpleName();
-    // Save last Location Provided
+    public static final int REQUEST_LOCATION_PERMISSIONS = 0x666;
+    public static final int USER_DISAGREED = 0;
+    public static final int USER_AGREED = -1;
     private Location mLastLocation;
-    // The Google Play Services Location Provider
     private LocationProvider mLocationProvider;
-    //The React Native Context
     ReactApplicationContext mReactContext;
 
-
-    // Constructor Method as called in Package
     public RNGLocationModule(ReactApplicationContext reactContext) {
         super(reactContext);
-        // Save Context for later use
         mReactContext = reactContext;
-
-        // Get Location Provider from Google Play Services
-        mLocationProvider = new LocationProvider(mReactContext.getApplicationContext(), this);
     }
-
 
     @Override
     public String getName() {
@@ -61,6 +57,9 @@ public class RNGLocationModule extends ReactContextBaseJavaModule implements Loc
 
     @ReactMethod
     public void start() {
+        // Get Location Provider from Google Play Services
+        mLocationProvider = new LocationProvider(mReactContext.getApplicationContext(), getCurrentActivity(), this);
+
         // Check if all went well and the Google Play Service are available...
         if (!mLocationProvider.checkPlayServices()) {
             Log.i("vova", "Location Provider not available...");
@@ -70,9 +69,7 @@ public class RNGLocationModule extends ReactContextBaseJavaModule implements Loc
             Log.i("vova", "Location Provider successfully created.");
         }
     }
-    /*
-     * Location Provider as called by JS
-     */
+
     @ReactMethod
     public void getLocation() {
         if (mLastLocation != null) {
@@ -120,5 +117,19 @@ public class RNGLocationModule extends ReactContextBaseJavaModule implements Loc
         if (mLocationProvider != null && mLocationProvider.connected) {
             mLocationProvider.disconnect();
         }
+    }
+
+    public boolean handleActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode != REQUEST_LOCATION_PERMISSIONS)
+            return false;
+
+        if (resultCode == USER_DISAGREED) {
+            sendEvent(mReactContext, "noLocationPermissions", Arguments.createMap());
+        }
+
+        if (resultCode == USER_AGREED)
+            mLocationProvider.requestLocation();
+
+        return true;
     }
 }
